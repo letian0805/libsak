@@ -12,46 +12,20 @@ static FILE *log_file = NULL;
 char *gettimestr(char *tmstr)
 {
     static char time_str[32] = {0};
+    struct tm *pvntm = NULL;
     struct tm vntm;
     time_t tmt = time(NULL);
 
     if (tmstr == NULL){
         tmstr = time_str;
     }
-    localtime_r(&tmt, &vntm);
+    pvntm = localtime(&tmt);
+    vntm = *pvntm;
     sprintf(tmstr, "%04d-%02d-%02d %02d:%02d:%02d", 
             vntm.tm_year + 1900, vntm.tm_mon + 1, vntm.tm_mday, 
             vntm.tm_hour, vntm.tm_min, vntm.tm_sec);
 
     return tmstr;
-}
-
-char *getpname(void)
-{
-    static char prog_name[1024] = {0};
-    if (prog_name[0]){
-        return prog_name;
-    }
-
-    char *pname = NULL;
-    pid_t pid = getpid();
-    char fname[1024] = {0};
-    char buf[1024] = {0};
-
-    sprintf(fname, "/proc/%d/cmdline", pid);
-    FILE *fp = fopen(fname, "r");
-    if (!fp){
-        perror("fopen");
-        return "";
-    }
-    fgets(buf, 1023, fp);
-    pname = strrchr(buf, '/');
-    pname = pname ? pname + 1 : buf;
-
-    strcpy(prog_name, pname);
-    fclose(fp);
-
-    return prog_name;
 }
 
 static const char *level_string(int level)
