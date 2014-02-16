@@ -9,10 +9,11 @@ char *getpname(void)
     }
 
     char *pname = NULL;
-    pid_t pid = getpid();
-    char fname[1024] = {0};
     char buf[1024] = {0};
 
+#if 0
+    pid_t pid = getpid();
+    char fname[1024] = {0};
     sprintf(fname, "/proc/%d/cmdline", pid);
     FILE *fp = fopen(fname, "r");
     if (!fp){
@@ -21,6 +22,14 @@ char *getpname(void)
     }
     fgets(buf, 1023, fp);
     fclose(fp);
+#else
+
+    int ret = readlink("/proc/self/exe", buf, 1023);
+    if (ret <= 0 || ret >=1024){
+        return ""
+    }
+#endif
+
     pname = strrchr(buf, '/');
     pname = pname ? pname + 1 : buf;
 
