@@ -78,6 +78,11 @@ int stack_pop(Stack *st, void *dst, int size)
     return 0;
 }
 
+int stack_size(Stack *st)
+{
+    return st->size;
+}
+
 void stack_free(Stack *st)
 {
     free(st->st);

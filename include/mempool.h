@@ -4,9 +4,11 @@
 
 typedef struct MemPool MemPool;
 
-MemPool *mempool_new(int block_size, int blocks_per_chunk);
+MemPool *mempool_new(int block_size);
 
-uint64_t mempool_size(MemPool *mp);
+uint64_t mempool_memsize(MemPool *mp);
+
+int mempool_blksize(MemPool *mp);
 
 void *mempool_get(MemPool *mp);
 

@@ -1,8 +1,8 @@
 import sys
 
-incdir = ["include", "debug", "data", "pool", "platform"]
+incdir = ["include", "debug", "data", "pool", "platform", "mem"]
 libs = []
-sources = ["debug/log.c", "data/stack.c", "data/queue.c", "pool/mempool.c"]
+sources = ["debug/log.c", "data/stack.c", "data/queue.c", "mem/mempool.c", "mem/mem.c"]
 cflags = ["-g"]
 if sys.platform == "win32":
     cflags += ["-D__windows__"]

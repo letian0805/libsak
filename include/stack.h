@@ -16,6 +16,8 @@ int stack_push(Stack *st, void *data, int size);
 
 int stack_pop(Stack *st, void *dst, int size);
 
+int stack_size(Stack *st);
+
 void stack_free(Stack *st);
 
 #endif //!__STACK_H
