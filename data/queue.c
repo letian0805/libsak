@@ -32,7 +32,26 @@ Queue *queue_new(int size)
 
 int queue_enlarge(Queue *q, float rate)
 {
+    if (rate <= 1){
+        rate = 1.5;
+    }
+    int new_size = q->size * rate;
+    uint8_t *new_buf = (uint8_t *)realloc(q->q, new_size);
+    if (!new_buf){
+        return -1;
+    }
 
+    q->q = new_buf;
+    if (q->count == q->size && q->tail == 0){
+        q->tail = q->size;
+    }else if (q->count > 0 && q->head >= q->tail) {
+        int size = q->size - q->head;
+        memmove(q->q + new_size - size, q->q + q->head, size);
+        q->head = new_size - size;
+    }
+    q->size = new_size;
+    
+    return 0;
 }
 
 bool queue_full(Queue *q)

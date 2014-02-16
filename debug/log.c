@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#include "platform.h"
 #include "log.h"
 
 static int log_level = LOG_DEBUG;

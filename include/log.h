@@ -1,7 +1,7 @@
 #ifndef __LOG_H
 #define __LOG_H
 
-enum{
+typedef enum{
     LOG_OFF = 0,
     LOG_FATAL,
     LOG_ERROR,
@@ -10,8 +10,6 @@ enum{
     LOG_DEBUG,
     LOG_ALL,
 }LogLevel;
-
-char *getpname(void);
 
 int log_init(int level, const char *log_file);
 

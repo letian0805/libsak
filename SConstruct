@@ -16,4 +16,7 @@ libs += Library(target = "sak", source = sources, CPPPATH = incdir, CFLAGS=cflag
 libs += ["pthread"]
 
 Program(target = "logdump", source = "debug/logdump.c", CPPPATH = incdir, CFLAGS=cflags)
-Program(target = "data_test", source = "test/data_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
+Program(target = "stack_test", source = "test/stack_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
+Program(target = "queue_test", source = "test/queue_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
+Program(target = "macro_test", source = "test/macro_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
+Program(target = "mempool_test", source = "test/mempool_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)

@@ -26,7 +26,7 @@ char *getpname(void)
 
     int ret = readlink("/proc/self/exe", buf, 1023);
     if (ret <= 0 || ret >=1024){
-        return ""
+        return "";
     }
 #endif
 

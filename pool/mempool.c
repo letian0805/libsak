@@ -4,9 +4,11 @@
 
 #include "mempool.h"
 #include "stack.h"
+#include "log.h"
 
-#define DEFCHUNKS 4
+#define DEFCHUNKS 32
 #define MINCHUNKSIZE (1024*2100)
+#define MINBLOCKSIZE 32
 
 struct MemPool{
     uint64_t mem_size;
@@ -16,11 +18,22 @@ struct MemPool{
     int nchunk;
     int slot_size;
     uint8_t **slot;
-    int free_chunk;
-    uint8_t *free_ptr;
+    int free_chunk_index;
+    int free_block_index;
     Stack *stack;
     pthread_spinlock_t lock;
 };
+
+typedef struct{
+    uint32_t block_index:16;
+    uint32_t chunk_index:14;
+    uint32_t block_state:2;
+}MemBlockInfo;
+
+typedef struct{
+    MemBlockInfo blk_info;
+    MemPool *mp;
+}MemInfo;
 
 static inline void mempool_enlarge_slot(MemPool *mp)
 {
@@ -39,18 +52,23 @@ static inline void mempool_add_chunk(MemPool *mp)
         mempool_enlarge_slot(mp);
     }
     mp->mem_size += mp->chunk_size;
-    mp->free_chunk = mp->nchunk;
-    mp->free_ptr = chunk;
+    mp->free_chunk_index = mp->nchunk;
+    mp->free_block_index = 0;
     mp->slot[mp->nchunk++] = chunk;
 }
 
-MemPool *mempool_new(int blocks_per_chunk, int block_size)
+MemPool *mempool_new(int block_size, int blocks_per_chunk)
 {
     MemPool *mp = (MemPool *)malloc(sizeof(MemPool));
     
+    block_size += sizeof(MemInfo);
+    if (block_size < MINBLOCKSIZE){
+        block_size = MINBLOCKSIZE;
+    }
     if ( (block_size & 7) ){
         block_size = ((block_size + 7) & ~7);
     }
+    DEBUG("---------sizeof(MemInfo): %d", sizeof(MemInfo));
     mp->block_size = block_size;
     mp->chunk_size = mp->block_size * blocks_per_chunk;
     if (mp->chunk_size < MINCHUNKSIZE){
@@ -74,19 +92,22 @@ uint64_t mempool_size(MemPool *mp)
 
 void *mempool_get(MemPool *mp)
 {
-    void *mem = NULL;
+    uint8_t *mem = NULL;
     stack_pop(mp->stack, &mem, sizeof(mem));
     if (mem){
         return mem;
     }
 
-    mem = mp->free_ptr;
-    mp->free_ptr += mp->block_size;
-    if (mp->free_ptr - mp->slot[mp->free_chunk] >= mp->chunk_size){
+    MemInfo *minfo = (MemInfo *)(mp->slot[mp->free_chunk_index] + mp->block_size * mp->free_block_index);
+    minfo->blk_info.block_index = mp->free_block_index;
+    minfo->mp = mp;
+    mem = (uint8_t *)minfo + sizeof(MemInfo);
+    mp->free_block_index++;
+    if (mp->free_block_index >= mp->blocks_per_chunk){
         mempool_add_chunk(mp);
     }
 
-    return mem;
+    return (void *)mem;
 }
 
 void mempool_put(MemPool *mp, void *mem)
