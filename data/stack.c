@@ -12,7 +12,7 @@ struct Stack{
 
 Stack *stack_new(int size)
 {
-    Stack *st = (Stack *)malloc(sizeof(Stack *));
+    Stack *st = (Stack *)malloc(sizeof(Stack));
     if (!st){
         return NULL;
     }

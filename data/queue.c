@@ -14,7 +14,7 @@ struct Queue{
 
 Queue *queue_new(int size)
 {
-    Queue *queue = (Queue *)malloc(size);
+    Queue *queue = (Queue *)malloc(sizeof(Queue));
     if (queue){
         queue->q = (uint8_t *)malloc(size);
         if (!queue->q){
