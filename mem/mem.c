@@ -118,6 +118,7 @@ void mem_free(void *addr)
                 MemBlkInfo *mi = (MemBlkInfo *)minfo;
                 int id = mi->pool_index;
                 if (id >= MAXMEMPOOL){
+                    free(addr);
                     return;
                 }
                 MemPool *mp = mpool_slots[id];
@@ -126,6 +127,7 @@ void mem_free(void *addr)
                 break;
             }
             default:
+                free(addr);
                 break;
         }
     }
