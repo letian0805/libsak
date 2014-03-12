@@ -34,7 +34,7 @@ typedef struct{
 
 struct Epoll{
     int epfd;
-    bool running;
+    volatile bool running;
     int fds_num;
     EpollData *data_head[HASH_SIZE];
     int eb_size;
@@ -229,7 +229,10 @@ static int epoll_stop_callback(Epoll *ep, EpollEventData *edata)
 {
     char c;
     while(nonblock_read(edata->fd, &c, 1) == 1);
+
     ep->running = false;
+
+    return 0;
 }
 
 static int epoll_init_trigger(Epoll *ep, int fds[2], EPCallback callback)
@@ -251,7 +254,7 @@ static int epoll_init_trigger(Epoll *ep, int fds[2], EPCallback callback)
 static EpollEvent epoll_events_translate_from(uint32_t events)
 {
     EpollEvent evts = 0;
-    if ( (events & EPOLLIN) ){
+    if ( (events & (EPOLLIN | EPOLLHUP)) ){
         evts |= EPOLL_IN;
     }
     if ( (events & EPOLLOUT) ){
@@ -343,5 +346,10 @@ void epoll_free(Epoll *ep)
         epoll_stop(ep);
         return;
     }
+    while(ep->running){
+        usleep(1000);
+    }
+
+    free(ep);
 }
 

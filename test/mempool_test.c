@@ -5,22 +5,27 @@
 #include "mem.h"
 #include "log.h"
 
-int main(void)
+#define BLKSIZE (1024)
+
+int main(int argc, char *argv[])
 {
+    int type = 0;
+    if (argc == 2){
+        type = atoi(argv[1]);
+    }
+    MemPool *mp = mempool_new(BLKSIZE);
+    void *mem1 = NULL;
 
-    MemPool *mp = mempool_new(64);
-    uint8_t *mem1 = mempool_get(mp);
-    strcpy(mem1, "abcdefg");
-    mempool_put(mp, mem1);
-    uint8_t *mem2 = mempool_get(mp);
-    DEBUG("---------mem2: %s\n", mem2);
-
-    void *mem = mem_poolget(28);
-    strcpy(mem, "hello world!");
-    DEBUG("--------mem:%p\n", mem);
-    mem_free(mem);
-    mem = mem_poolget(28);
-    DEBUG("--------mem:%p %s\n",mem, mem);
+    int i;
+    if (type == 0){
+        for (i = 0; i < 2000000; i++){
+            mem1 = mempool_get(mp);
+        }
+    }else{
+        for (i = 0; i < 2000000; i++){
+            mem1 = malloc(BLKSIZE);
+        }
+    }
 
     return 0;
 }

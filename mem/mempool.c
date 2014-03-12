@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include "mempool.h"
 #include "stack.h"
@@ -8,7 +9,7 @@
 #include "log.h"
 
 #define MINSLOTSIZE 32
-#define MAXCHUNKSIZE (2*1024*1024)
+#define MAXCHUNKSIZE (4*1024*1024)
 #define MINBLOCKSIZE 32
 #define BLKSIZEALIGN 8
 
@@ -29,9 +30,9 @@ struct MemPool{
 static inline void mempool_enlarge_slot(MemPool *mp)
 {
     int new_slot_size = mp->slot_size * 2;
-    uint8_t **new_slot = (uint8_t **)realloc(mp->slot, new_slot_size);
+    uint8_t **new_slot = (uint8_t **)realloc(mp->slot, new_slot_size * sizeof(uint8_t *));
     if (new_slot){
-        mp->mem_size += new_slot_size - mp->slot_size;
+        mp->mem_size += (new_slot_size - mp->slot_size) * sizeof(uint8_t *) ;
         mp->slot = new_slot;
         mp->slot_size = new_slot_size;
     }
@@ -39,7 +40,7 @@ static inline void mempool_enlarge_slot(MemPool *mp)
 
 static inline void mempool_add_chunk(MemPool *mp)
 {
-    uint8_t *chunk = (uint8_t *)malloc(mp->chunk_size);
+    uint8_t *chunk = (uint8_t *)mmap(NULL, mp->chunk_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
     if (mp->nchunk == mp->slot_size){
         mempool_enlarge_slot(mp);
     }
@@ -128,7 +129,6 @@ void mempool_put(MemPool *mp, void *mem)
         stack_enlarge(mp->stack, 1.5);
         mp->mem_size += stack_size(mp->stack) - size;
     }
-    DEBUG("---------put: %p", mem);
     stack_push(mp->stack, &mem, sizeof(mem));
 }
 
@@ -137,7 +137,7 @@ void mempool_free(MemPool *mp)
     stack_free(mp->stack);
     int i;
     for (i = 0; i < mp->nchunk; i++){
-        free(mp->slot[i]);
+        munmap(mp->slot[i], mp->chunk_size);
     }
     free(mp->slot);
     pthread_spin_destroy(&mp->lock);
