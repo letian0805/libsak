@@ -49,7 +49,7 @@ void *mem_malloc(int size)
     uint8_t *mem = NULL;
     size += sizeof(MemBlkInfo);
     MemInfo *minfo = (MemInfo *)malloc(size);
-    meminfo_init(BLK_TYPE_MALLOC, minfo);
+    minfo->type = MEM_TYPE_ALC;
     mem = (uint8_t *)minfo;
     mem += sizeof(MemInfo);
     return (void *)mem;
@@ -88,10 +88,8 @@ void *mem_poolget(int size)
     DEBUG("-------mp: %p. blk size: %d, mem: %p", mp, size, mem);
     if (mem){
         MemBlkInfo *minfo = (MemBlkInfo *)(mem - sizeof(MemBlkInfo));
-        if (minfo->type !=BLK_TYPE_POOL){
-            meminfo_init(BLK_TYPE_POOL, (MemInfo *)minfo);
-            minfo->pool_index = id;
-        }
+        minfo->type = MEM_TYPE_POOL;
+        minfo->pool_index = id;
     }
 
     return mem;
@@ -105,31 +103,29 @@ int mem_size(void *addr)
 void mem_free(void *addr)
 {
     MemInfo *minfo = (MemInfo *)((uint8_t *)addr - sizeof(MemBlkInfo));
-    if (meminfo_check(minfo)){
-        switch(minfo->type){
-            case BLK_TYPE_MALLOC:
-                break;
-            case BLK_TYPE_MMAP:
-                break;
-            case BLK_TYPE_SHM:
-                break;
-            case BLK_TYPE_POOL:
-            {
-                MemBlkInfo *mi = (MemBlkInfo *)minfo;
-                int id = mi->pool_index;
-                if (id >= MAXMEMPOOL){
-                    free(addr);
-                    return;
-                }
-                MemPool *mp = mpool_slots[id];
-                DEBUG("---------mp: %p, mem free: %p", mp, addr);
-                mempool_put(mp, addr);
-                break;
-            }
-            default:
+    switch(minfo->type){
+        case MEM_TYPE_ALC:
+            break;
+        case MEM_TYPE_MAP:
+            break;
+        case MEM_TYPE_SHM:
+            break;
+        case MEM_TYPE_POOL:
+        {
+            MemBlkInfo *mi = (MemBlkInfo *)minfo;
+            int id = mi->pool_index;
+            if (id >= MAXMEMPOOL){
                 free(addr);
-                break;
+                return;
+            }
+            MemPool *mp = mpool_slots[id];
+            DEBUG("---------mp: %p, mem free: %p", mp, addr);
+            mempool_put(mp, addr);
+            break;
         }
+        default:
+            free(addr);
+            break;
     }
 
 }

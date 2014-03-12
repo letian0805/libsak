@@ -112,7 +112,7 @@ void *mempool_get(MemPool *mp)
     }
     mem = mp->slot[mp->free_chunk_index] + mp->block_size * mp->free_block_index;
     MemBlkInfo *minfo = (MemBlkInfo *)mem;
-    meminfo_init(BLK_TYPE_POOL, (MemInfo *)minfo);
+    minfo->type = MEM_TYPE_POOL;
     minfo->chunk_index = mp->free_chunk_index;
     minfo->block_index = mp->free_block_index;
     mp->free_block_index++;
