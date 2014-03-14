@@ -120,10 +120,7 @@ static int nonblock_read(int fd, char *buf, int size)
             if (ret == 0){
                 return -1;
             }
-            if (errno == EAGAIN){
-                break;
-            }
-            if (errno == EINTR){
+            if (errno == EAGAIN || errno == EINTR){
                 continue;
             }
         }
@@ -175,11 +172,10 @@ static int epoll_add_event_internal(Epoll *ep, EpollAddEvent *add)
 static int epoll_add_callback(Epoll *ep, EpollEventData *edata)
 {
     EpollAddEvent add;
-    if (nonblock_read(edata->fd, (char *)&add, sizeof(add)) == sizeof(add)){
-        return epoll_add_event_internal(ep, &add);
+    if (nonblock_read(edata->fd, (char *)&add, sizeof(add)) <= 0){
+        return -1;
     }
-
-    return -1;
+    return epoll_add_event_internal(ep, &add);
 }
 
 static int epoll_rm_event_internal(Epoll *ep, EpollDelEvent *del)
