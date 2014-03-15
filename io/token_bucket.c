@@ -1,11 +1,13 @@
 #include <pthread.h>
 #include <stdlib.h>
 
+#include "log.h"
 #include "token_bucket.h"
 
 struct TokenBucket{
     int size;
-    int tokens;
+    int limit;
+    volatile int tokens;
     int bitrate;
     int id;
     pthread_mutex_t wait_lock;
@@ -83,7 +85,7 @@ static inline void tbmanager_put_token(TokenBucketManager *tbman)
     TokenBucket *bkt = NULL;
     for (i = 0; i < tbman->nbkts; i++){
         bkt = tbman->bkts[i];
-        tokens = bkt->bitrate * tbman->interval_ms / 1000;
+        tokens = (bkt->bitrate * tbman->interval_ms) / 1000;
         token_bucket_put(bkt, tokens);
     }
 }
@@ -103,7 +105,7 @@ static void *tbmanager_thread(void *data)
         }
         tbmanager_put_token(tbman);
         tbmanager_unlock(tbman);
-        usleep(tbman->interval_ms);
+        usleep(tbman->interval_ms*1000);
     }
 
     pthread_mutex_unlock(&tbman->thread_lock);
@@ -132,12 +134,13 @@ void token_bucket_manager_destroy(TokenBucketManager *tbman)
 
 }
 
-TokenBucket *token_bucket_create(int bitrate, int size)
+TokenBucket *token_bucket_create(int bitrate)
 {
     TokenBucket *tb = (TokenBucket *)calloc(1, sizeof(TokenBucket));
     tb->bitrate = bitrate;
-    tb->size = size;
-    tb->tokens = size;
+    tb->size = bitrate/8;
+    tb->tokens = tb->size;
+    tb->limit = (tb->size/64 > 512) ? 512 : tb->size/64;
     tb->tbman = NULL;
     tb->id = -1;
     pthread_mutex_init(&tb->wait_lock, NULL);
@@ -173,7 +176,7 @@ int token_bucket_put(TokenBucket *bkt, int tokens)
     if (bkt->tokens > bkt->size){
         bkt->tokens = bkt->size;
     }
-    if (oldtok <= 0 && bkt->tokens > 0){
+    if (oldtok <= bkt->limit && bkt->tokens > bkt->limit){
         pthread_mutex_unlock(&bkt->wait_lock);
     }
     ret = bkt->tokens - oldtok;
@@ -185,6 +188,7 @@ int token_bucket_put(TokenBucket *bkt, int tokens)
 int token_bucket_get(TokenBucket *bkt, int tokens)
 {
     if (!bkt || tokens <= 0){
+        ERROR("---wrong args----");
         return 0;
     }
     int oldtok = 0;
@@ -193,7 +197,7 @@ int token_bucket_get(TokenBucket *bkt, int tokens)
     tb_lock(bkt);
     oldtok = bkt->tokens;
     bkt->tokens -= tokens;
-    if (bkt->tokens > 0){
+    if (bkt->tokens > bkt->limit){
         pthread_mutex_unlock(&bkt->wait_lock);
     }
     ret = oldtok - bkt->tokens;

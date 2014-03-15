@@ -18,7 +18,7 @@ TokenBucketManager *token_bucket_manager_create(int maxbkts, int interval_ms);
 
 void token_bucket_manager_destroy(TokenBucketManager *tbman);
 
-TokenBucket *token_bucket_create(int bitrate, int size);
+TokenBucket *token_bucket_create(int bitrate);
 
 int token_bucket_set_manager(TokenBucket *bkt, TokenBucketManager *tbman);
 
