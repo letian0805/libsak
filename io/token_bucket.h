@@ -14,22 +14,22 @@ struct TokenBucket{
 };
 #endif
 
-TokenBucketManager *token_bucket_manager_create(int maxbkts, int interval_ms);
+TokenBucketManager *token_bucket_manager_create(int maxtbs, int interval_ms);
 
 void token_bucket_manager_destroy(TokenBucketManager *tbman);
 
 TokenBucket *token_bucket_create(int bitrate);
 
-int token_bucket_set_manager(TokenBucket *bkt, TokenBucketManager *tbman);
+int token_bucket_set_manager(TokenBucket *tb, TokenBucketManager *tbman);
 
-int token_bucket_put(TokenBucket *bkt, int tokens);
+int token_bucket_put(TokenBucket *tb, int tokens);
 
-int token_bucket_get(TokenBucket *bkt, int tokens);
+int token_bucket_get(TokenBucket *tb, int tokens);
 
-int token_bucket_set_bitrate(TokenBucket *bkt, int bitrate);
+int token_bucket_set_bitrate(TokenBucket *tb, int bitrate);
 
-int token_bucket_set_size(TokenBucket *bkt, int size);
+int token_bucket_set_size(TokenBucket *tb, int size);
 
-void token_bucket_destroy(TokenBucket *bkt);
+void token_bucket_destroy(TokenBucket *tb);
 
 #endif //!__TOKEN_BUCKET_H
