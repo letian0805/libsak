@@ -2,7 +2,7 @@ import sys
 
 incdir = ["include", "debug", "data", "pool", "platform", "mem", "io"]
 libs = []
-sources = ["io/epool.c", "io/token_bucket.c", "debug/log.c", "data/stack.c", "data/queue.c", "mem/mempool.c", "mem/mem.c"]
+sources = ["io/epool.c", "io/esignal.c", "io/token_bucket.c", "debug/log.c", "data/stack.c", "data/queue.c", "mem/mempool.c", "mem/mem.c"]
 cflags = ["-g"]
 if sys.platform == "win32":
     cflags += ["-D__windows__"]
@@ -22,4 +22,5 @@ Program(target = "macro_test", source = "test/macro_test.c", CPPPATH = incdir, L
 Program(target = "mempool_test", source = "test/mempool_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
 Program(target = "mem_test", source = "test/mem_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
 Program(target = "epool_test", source = "test/epool_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
+Program(target = "esignal_test", source = "test/esignal_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
 Program(target = "tokbkt_test", source = "test/tokbkt_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)

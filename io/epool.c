@@ -43,7 +43,7 @@ struct EPool{
     struct epoll_event *eb;
     int stop_trigger[2];
     int add_trigger[2];
-    int rm_trigger[2];
+    int del_trigger[2];
     pthread_mutex_t lock;
     pthread_t tid;
 };
@@ -51,7 +51,7 @@ struct EPool{
 static EPEvent epool_events_translate_from(uint32_t events);
 static int epool_events_translate_to(EPEvent events);
 static int epool_add_callback(EPool *ep, EPEventData *edata);
-static int epool_remove_callback(EPool *ep, EPEventData *edata);
+static int epool_del_callback(EPool *ep, EPEventData *edata);
 static int epool_stop_callback(EPool *ep, EPEventData *edata);
 static int epool_init_trigger(EPool *ep, int fds[2], EPCallback callback);
 
@@ -132,7 +132,7 @@ EPool *epool_new(int size)
     ep->fds_num = 0;
     ep->running = false;
     epool_init_trigger(ep, ep->add_trigger, epool_add_callback);
-    epool_init_trigger(ep, ep->rm_trigger, epool_remove_callback);
+    epool_init_trigger(ep, ep->del_trigger, epool_del_callback);
     epool_init_trigger(ep, ep->stop_trigger, epool_stop_callback);
     pthread_mutex_init(&ep->lock, NULL);
     ep->tid = pthread_self();
@@ -221,7 +221,7 @@ static int epool_add_callback(EPool *ep, EPEventData *edata)
     return 0;
 }
 
-static int epool_rm_event_internal(EPool *ep, EPDelEvent *del)
+static int epool_del_event_internal(EPool *ep, EPDelEvent *del)
 {
     int idx = epool_get_hash_id(del->fd);
     EPData *edata_head = ep->data_head[idx];
@@ -254,11 +254,11 @@ static int epool_rm_event_internal(EPool *ep, EPDelEvent *del)
     return 0;
 }
 
-static int epool_remove_callback(EPool *ep, EPEventData *edata)
+static int epool_del_callback(EPool *ep, EPEventData *edata)
 {
     EPDelEvent del;
     while(nonblock_read(edata->fd, (char *)&del, sizeof(del)) == sizeof(del)){
-        epool_rm_event_internal(ep, &del);
+        epool_del_event_internal(ep, &del);
     }
 
     return 0;
@@ -298,18 +298,26 @@ int epool_add_event(EPool *ep, int fd, EPEvent events, void *user_data, EPCallba
         .user_data = user_data,
         .callback = callback,
     };
-    write(ep->add_trigger[1], &add, sizeof(add));
+    if (pthread_equal(ep->tid, pthread_self())){
+        epool_add_event_internal(ep, &add);
+    }else{
+        write(ep->add_trigger[1], &add, sizeof(add));
+    }
 
     return 0;
 }
 
-int epool_remove_event(EPool *ep, int fd, EPEvent events)
+int epool_del_event(EPool *ep, int fd, EPEvent events)
 {
     EPDelEvent del = {
         .fd = fd,
         .events = events,
     };
-    write(ep->rm_trigger[1], &del, sizeof(del));
+    if (pthread_equal(ep->tid, pthread_self())){
+        epool_del_event_internal(ep, &del);
+    }else{
+        write(ep->del_trigger[1], &del, sizeof(del));
+    }
 
     return 0;
 }
@@ -363,8 +371,8 @@ void epool_free(EPool *ep)
     }
     close(ep->add_trigger[0]);
     close(ep->add_trigger[1]);
-    close(ep->rm_trigger[0]);
-    close(ep->rm_trigger[1]);
+    close(ep->del_trigger[0]);
+    close(ep->del_trigger[1]);
     close(ep->stop_trigger[0]);
     close(ep->stop_trigger[1]);
     close(ep->epfd);
