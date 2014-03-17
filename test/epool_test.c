@@ -28,6 +28,12 @@ void *thread_proc(void *data)
     return NULL;
 }
 
+static void test1(void)
+{
+    EPool *ep = epool_current();
+    epool_stop(ep);
+}
+
 static int ep_callback(EPool *ep, EPEventData *edata)
 {
     char buf[1024] = {0};
@@ -35,6 +41,7 @@ static int ep_callback(EPool *ep, EPEventData *edata)
         int size = read(edata->fd, buf, 1023);
         printf("epcbk: %s\n", buf);
         write(g_fd2[1], buf, size);
+        test1();
     }else{
         printf("epcbk: remove g_fd2[0]\n");
     }
@@ -56,6 +63,10 @@ static int ep_callback2(EPool *ep, EPEventData *edata)
 int main(void)
 {
     EPool *ep = epool_new(1024);
+    EPool *ep1 = epool_new(1024);
+    if (ep1 == ep){
+        printf("------same ep-----\n");
+    }
     pipe(g_fd);
     pipe(g_fd2);
     epool_add_event(ep, g_fd[0], EP_IN, NULL, ep_callback);
@@ -65,6 +76,7 @@ int main(void)
     pthread_create(&tid, NULL, thread_proc, (void *)ep);
 
     epool_run(ep);
+    printf("--------STOPED-------------\n");
     epool_free(ep);
 
     return 0;

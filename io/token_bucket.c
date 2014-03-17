@@ -24,8 +24,8 @@ struct TokenBucketManager{
     int interval_ms;
     struct timeval start_time;
     volatile int64_t run_time;
-    int ntbs;
     volatile int running;
+    int ntbs;
     TokenBucket **tbs;
     pthread_spinlock_t lock;
     pthread_t tid;
@@ -165,10 +165,10 @@ TokenBucketManager *token_bucket_manager_create(int maxtbs, int interval_ms)
 
 void token_bucket_manager_destroy(TokenBucketManager *tbman)
 {
+    void *ret = NULL;
     tbmanager_lock(tbman);
     tbman->running = 0;
     tbmanager_unlock(tbman);
-    void *ret = NULL;
     pthread_join(tbman->tid, &ret);
     free(tbman->tbs);
     pthread_spin_destroy(&tbman->lock);
@@ -249,6 +249,7 @@ int token_bucket_get(TokenBucket *tb, int tokens)
 int token_bucket_set_bitrate(TokenBucket *tb, int bitrate)
 {
     assert(tb && bitrate >= MIN_BITRATE);
+
     tb_lock(tb);
     tb->bitrate = bitrate;
     tb->size = bitrate/4;

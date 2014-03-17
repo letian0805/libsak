@@ -20,6 +20,8 @@ typedef int (*EPCallback)(EPool *ep, EPEventData *edata);
 
 EPool *epool_new(int size);
 
+EPool *epool_current(void);
+
 int epool_add_event(EPool *ep, int fd, EPEvent events, void *user_data, EPCallback callback);
 
 int epool_del_event(EPool *ep, int fd, EPEvent events);

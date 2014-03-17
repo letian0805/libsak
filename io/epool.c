@@ -14,7 +14,6 @@
 #define HASH_SIZE 1023
 
 typedef struct EPData EPData;
-
 struct EPData{
     EPData *prev;
     EPData *next;
@@ -35,6 +34,9 @@ typedef struct{
 }EPDelEvent;
 
 struct EPool{
+    EPool *prev;
+    EPool *next;
+    int refcount;
     int epfd;
     volatile bool running;
     int fds_num;
@@ -48,12 +50,75 @@ struct EPool{
     pthread_t tid;
 };
 
+typedef struct{
+    EPool ep_header;
+    pthread_spinlock_t lock;
+    volatile bool inited;
+}EPoolManager;
+
+static EPoolManager g_ep_manager;
+
 static EPEvent epool_events_translate_from(uint32_t events);
 static int epool_events_translate_to(EPEvent events);
 static int epool_add_callback(EPool *ep, EPEventData *edata);
 static int epool_del_callback(EPool *ep, EPEventData *edata);
 static int epool_stop_callback(EPool *ep, EPEventData *edata);
 static int epool_init_trigger(EPool *ep, int fds[2], EPCallback callback);
+
+static inline void epmanager_init(void)
+{
+    if (g_ep_manager.inited){
+        return;
+    }
+    g_ep_manager.inited = true;
+    pthread_spin_init(&g_ep_manager.lock, 0);
+}
+
+static inline void epmanager_lock(void)
+{
+    pthread_spin_lock(&g_ep_manager.lock);
+}
+
+static inline void epmanager_unlock(void)
+{
+    pthread_spin_unlock(&g_ep_manager.lock);
+}
+
+static inline void epmanager_insert(EPool *ep)
+{
+    epmanager_init();
+    epmanager_lock();
+    ep->next = g_ep_manager.ep_header.next;
+    ep->prev = &g_ep_manager.ep_header;
+    g_ep_manager.ep_header.next = ep;
+    epmanager_unlock();
+}
+
+static inline EPool *epmanager_find(pthread_t tid)
+{
+    epmanager_init();
+    epmanager_lock();
+    EPool *ep = g_ep_manager.ep_header.next;
+    while(ep && !pthread_equal(tid, ep->tid)){
+        ep = ep->next;
+    }
+    epmanager_unlock();
+
+    return ep;
+}
+
+static inline void epmanager_remove(EPool *ep)
+{
+    epmanager_init();
+    epmanager_lock();
+    ep->prev->next = ep->next;
+    if (ep->next){
+        ep->next->prev = ep->prev;
+    }
+    ep->next = NULL;
+    ep->prev = NULL;
+    epmanager_unlock();
+}
 
 static inline void epool_lock(EPool *ep)
 {
@@ -112,14 +177,25 @@ static inline int epool_fd_nonblock(int fd)
     return ret;
 }
 
+EPool *epool_current(void)
+{
+    return epmanager_find(pthread_self());
+}
+
 EPool *epool_new(int size)
 {
-    assert(size > 0);
+    if (size < 1024){
+        size = 1024;
+    }
+    EPool *ep = epmanager_find(pthread_self());
+    if (ep){
+        return ep;
+    }
     int epfd = epoll_create(size);
     if (epfd < 0){
         return NULL;
     }
-    EPool *ep = (EPool *)calloc(1, sizeof(EPool));
+    ep = (EPool *)calloc(1, sizeof(EPool));
     if (!ep){
         goto FAILED;
     }
@@ -127,6 +203,8 @@ EPool *epool_new(int size)
     if (!ep->eb){
         goto FAILED;
     }
+    ep->prev = NULL;
+    ep->next = NULL;
     ep->eb_size = size;
     ep->epfd = epfd;
     ep->fds_num = 0;
@@ -136,6 +214,8 @@ EPool *epool_new(int size)
     epool_init_trigger(ep, ep->stop_trigger, epool_stop_callback);
     pthread_mutex_init(&ep->lock, NULL);
     ep->tid = pthread_self();
+
+    epmanager_insert(ep);
 
     return ep;
 FAILED:
@@ -206,6 +286,7 @@ static int epool_add_event_internal(EPool *ep, EPAddEvent *add)
         .data = {.ptr = edata},
     };
     epoll_ctl(ep->epfd, EPOLL_CTL_ADD, add->fd, &epevt);
+    ep->fds_num++;
     epool_insert_edata(ep, edata);
 
     return 0;
@@ -235,6 +316,7 @@ static int epool_del_event_internal(EPool *ep, EPDelEvent *del)
     int events = (del->events & edata->edata.events);
     if ( events == edata->edata.events){
         epoll_ctl(ep->epfd, EPOLL_CTL_DEL, del->fd, NULL);
+        ep->fds_num--;
         if (edata == edata_head){
             ep->data_head[idx] = edata_head->next;
             ep->data_head[idx]->prev = NULL;
