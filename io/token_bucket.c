@@ -94,18 +94,21 @@ static inline void tbmanager_del_token_bucket(TokenBucketManager *tbman, TokenBu
     }
     tbmanager_lock(tbman);
     tb_lock(tb);
-    if (tb->id >= 0 && tb->id < tbman->ntbs && tbman->tbs[tb->id] == tb){
-        tbman->ntbs--;
-        TokenBucket *tb = tbman->tbs[tbman->ntbs];
-        tb_lock(tb);
-        tb->id = tb->id;
-        tbman->tbs[tb->id] = tb;
-        tb_unlock(tb);
-        tbman->tbs[tbman->ntbs] = NULL;
-        tb->tbman = NULL;
-        tb->id = -1;
-    }
+    int id = tb->id;
+    tb->tbman = NULL;
+    tb->id = -1;
     tb_unlock(tb);
+    if (id >= 0 && id < tbman->ntbs && tbman->tbs[id] == tb){
+        tbman->ntbs--;
+        TokenBucket *bkt = tbman->tbs[tbman->ntbs];
+        if (bkt != tb){
+            tb_lock(bkt);
+            bkt->id = id;
+            tb_unlock(bkt);
+            tbman->tbs[id] = bkt;
+        }
+        tbman->tbs[tbman->ntbs] = NULL;
+    }
     tbmanager_unlock(tbman);
 }
 

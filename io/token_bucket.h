@@ -4,16 +4,6 @@
 typedef struct TokenBucket TokenBucket;
 typedef struct TokenBucketManager TokenBucketManager;
 
-#if 0
-struct TokenBucket{
-    int size;
-    int tokens;
-    int bitrate;
-    pthread_mutex_t wait_lock;
-    pthread_spinlock_t lock;
-};
-#endif
-
 TokenBucketManager *token_bucket_manager_create(int maxtbs, int interval_ms);
 
 void token_bucket_manager_destroy(TokenBucketManager *tbman);
