@@ -1,5 +1,7 @@
 #include <time.h>
+#include <stdio.h>
 #include <sys/time.h>
+
 #include "token_bucket.h"
 
 int main(void)
@@ -12,7 +14,7 @@ int main(void)
     struct timeval tm2;
     srand(time(NULL));
     int datasize = bitrate/128;
-    int sumsize = 16*bitrate;
+    int sumsize = 2*bitrate;
     int sum = 0;
     gettimeofday(&tm1, NULL);
     int i;
@@ -33,6 +35,12 @@ int main(void)
         printf("------speed is: %lf Kb/s\n", speed/1024);
     }else{
         printf("------speed is: %lf b/s\n", speed);
+    }
+    int deviation = speed - bitrate;
+    if (deviation >= 1024){
+        printf("----speed deviation: %.2f%%, %.2fKb/s\n", (100.0 * deviation) / bitrate, deviation / 1024.0);
+    }else{
+        printf("----speed deviation: %.2f%%, %db/s\n", (100.0 * deviation) / bitrate, deviation);
     }
 
     return 0;

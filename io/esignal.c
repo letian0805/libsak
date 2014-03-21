@@ -12,9 +12,9 @@ struct ESignal{
     EPool *ep;
 };
 
-int esignal_add(void *owner, char *sig_name, ESCallback callback,  EPool *ep)
+int esignal_add(void *owner, char *sig_name, ESCallback callback)
 {
-
+    
     return 0;
 }
 
