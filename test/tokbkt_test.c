@@ -20,7 +20,7 @@ int main(void)
     int i;
     do{
         int size = datasize - (((rand()*1000) % datasize) - datasize/2);
-        int ret = token_bucket_get(tb, size);
+        int ret = token_bucket_get(tb, size, false);
         sum += ret;
     }while(sum < sumsize);
     gettimeofday(&tm2, NULL);

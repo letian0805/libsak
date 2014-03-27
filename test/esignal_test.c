@@ -13,7 +13,7 @@ int esignal_test_callback(void *owner, void *data)
 int main(void)
 {
     EPool *ep = epool_new(1024);
-    esignal_add(g_owner, "esignal test", esignal_test_callback, ep);
+    esignal_add(g_owner, "esignal test", esignal_test_callback);
     esignal_emit(g_owner, "esignal test", "hello world");
 
     epool_run(ep);

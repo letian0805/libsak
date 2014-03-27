@@ -230,13 +230,19 @@ int token_bucket_put(TokenBucket *tb, int tokens)
     return ret;
 }
 
-int token_bucket_get(TokenBucket *tb, int tokens)
+int token_bucket_get(TokenBucket *tb, int tokens, bool nonblock)
 {
     assert(tb && tokens > 0);
 
     int oldtok = 0;
     int ret = 0;
-    pthread_mutex_lock(&tb->wait_lock);
+    if (nonblock){
+        if (pthread_mutex_trylock(&tb->wait_lock)){
+            return -1;
+        }
+    }else{
+        pthread_mutex_lock(&tb->wait_lock);
+    }
     tb_lock(tb);
     oldtok = tb->tokens;
     tb->tokens -= tokens;

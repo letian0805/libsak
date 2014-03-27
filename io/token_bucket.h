@@ -1,5 +1,6 @@
 #ifndef __TOKEN_BUCKET_H
 #define __TOKEN_BUCKET_H
+#include <stdbool.h>
 
 typedef struct TokenBucket TokenBucket;
 typedef struct TokenBucketManager TokenBucketManager;
@@ -14,7 +15,7 @@ int token_bucket_set_manager(TokenBucket *tb, TokenBucketManager *tbman);
 
 int token_bucket_put(TokenBucket *tb, int tokens);
 
-int token_bucket_get(TokenBucket *tb, int tokens);
+int token_bucket_get(TokenBucket *tb, int tokens, bool nonblock);
 
 int token_bucket_set_bitrate(TokenBucket *tb, int bitrate);
 
