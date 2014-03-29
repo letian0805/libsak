@@ -1,8 +1,10 @@
 import sys
 
 incdir = ["include", "debug", "data", "pool", "platform", "mem", "io"]
-libs = []
-sources = ["io/epool.c", "io/esignal.c", "io/token_bucket.c", "debug/log.c", "data/stack.c", "data/queue.c", "mem/mempool.c", "mem/mem.c"]
+sources = [ "io/epool.c", "io/esignal.c", "io/token_bucket.c", 
+            "debug/log.c", "debug/trace.c",
+            "data/stack.c", "data/queue.c", 
+            "mem/mempool.c", "mem/mem.c"]
 cflags = ["-g"]
 if sys.platform == "win32":
     cflags += ["-D__windows__"]
@@ -12,8 +14,8 @@ else:
     sources += ["platform/linux.c"]
 
 #libs += SharedLibrary(target = "sak", source = sources, CPPPATH = incdir)
-libs += Library(target = "sak", source = sources, CPPPATH = incdir, CFLAGS=cflags)
-libs += ["pthread"]
+libs = Library(target = "sak", source = sources, CPPPATH = incdir, CFLAGS=cflags)
+libs += ["dl", "pthread"]
 
 Program(target = "logdump", source = "debug/logdump.c", CPPPATH = incdir, CFLAGS=cflags)
 Program(target = "stack_test", source = "test/stack_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
@@ -24,3 +26,4 @@ Program(target = "mem_test", source = "test/mem_test.c", CPPPATH = incdir, LIBS 
 Program(target = "epool_test", source = "test/epool_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
 Program(target = "esignal_test", source = "test/esignal_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
 Program(target = "tokbkt_test", source = "test/tokbkt_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
+Program(target = "trace_test", source = "test/trace_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS = cflags)
