@@ -13,6 +13,16 @@
 #define MINBLOCKSIZE 32
 #define BLKSIZEALIGN 8
 
+typedef struct MemChunk MemChunk;
+struct MemChunk{
+    Stack *stack;
+    int blk_size;
+    int nblks;
+    int free_blks;
+    int free_blk_idx;
+    uint8_t *mem;
+};
+
 struct MemPool{
     uint64_t mem_size;
     int blocks_per_chunk;
@@ -38,9 +48,12 @@ static inline void mempool_enlarge_slot(MemPool *mp)
     }
 }
 
-static inline void mempool_add_chunk(MemPool *mp)
+static inline int mempool_add_chunk(MemPool *mp)
 {
     uint8_t *chunk = (uint8_t *)mmap(NULL, mp->chunk_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+    if (chunk == MAP_FAILED){
+        return -1;
+    }
     if (mp->nchunk == mp->slot_size){
         mempool_enlarge_slot(mp);
     }
@@ -48,6 +61,8 @@ static inline void mempool_add_chunk(MemPool *mp)
     mp->free_chunk_index = mp->nchunk;
     mp->free_block_index = 0;
     mp->slot[mp->nchunk++] = chunk;
+
+    return 0;
 }
 
 int mempool_make_blksize(int size)
@@ -68,7 +83,10 @@ int mempool_make_blksize(int size)
 MemPool *mempool_new(int block_size)
 {
     int blocks_per_chunk = 0;
-    MemPool *mp = (MemPool *)malloc(sizeof(MemPool));
+    MemPool *mp = (MemPool *)calloc(1, sizeof(MemPool));
+    if (!mp){
+        return NULL;
+    }
     mp->mem_size = sizeof(MemPool);
 
     mp->block_size = mempool_make_blksize(block_size);
@@ -77,14 +95,26 @@ MemPool *mempool_new(int block_size)
 
     mp->nchunk = 0;
     mp->slot_size = MINSLOTSIZE;
-    mp->slot = (uint8_t **)malloc(sizeof(uint8_t *) * mp->slot_size);
+    mp->slot = (uint8_t **)calloc(mp->slot_size, sizeof(uint8_t *));
+    if (!mp->slot){
+        goto ERROR;
+    }
     mp->mem_size += sizeof(uint8_t *) * mp->slot_size;
-    mempool_add_chunk(mp);
+    if (mempool_add_chunk(mp) != 0){
+        goto ERROR;
+    }
     mp->stack = stack_new(1024 * sizeof(void *));
+    if (!mp->stack){
+        goto ERROR;
+    }
     mp->mem_size += stack_size(mp->stack);
 
     pthread_spin_init(&mp->lock, 0);
-    return mp;  
+    return mp;
+
+ERROR:
+    mempool_free(mp);
+    return NULL;
 }
 
 uint64_t mempool_memsize(MemPool *mp)
@@ -102,44 +132,53 @@ int mempool_blksize(MemPool *mp)
 
 void *mempool_get(MemPool *mp)
 {
-    uint8_t *mem = NULL;
-    stack_pop(mp->stack, &mem, sizeof(mem));
-    if (mem){
-        return mem;
+    MemBlkInfo *minfo = NULL;
+    stack_pop(mp->stack, &minfo, sizeof(minfo));
+    if (minfo){
+        minfo->type = MEM_TYPE_POOL;
+        return minfo->mem;
     }
 
     if (mp->free_block_index >= mp->blocks_per_chunk){
         mempool_add_chunk(mp);
     }
-    mem = mp->slot[mp->free_chunk_index] + mp->block_size * mp->free_block_index;
-    MemBlkInfo *minfo = (MemBlkInfo *)mem;
+    minfo = (MemBlkInfo *)(mp->slot[mp->free_chunk_index] + mp->block_size * mp->free_block_index);
     minfo->type = MEM_TYPE_POOL;
     minfo->chunk_index = mp->free_chunk_index;
     minfo->block_index = mp->free_block_index;
     mp->free_block_index++;
 
-    mem += sizeof(MemBlkInfo);
-    return (void *)mem;
+    return (void *)minfo->mem;
 }
 
 void mempool_put(MemPool *mp, void *mem)
 {
+    MemBlkInfo *minfo = (MemBlkInfo *)(((uint8_t *)mem) - sizeof(MemBlkInfo));
     if (stack_full(mp->stack)){
         int size = stack_size(mp->stack);
         stack_enlarge(mp->stack, 1.5);
         mp->mem_size += stack_size(mp->stack) - size;
     }
-    stack_push(mp->stack, &mem, sizeof(mem));
+    if (minfo->chunk_index < mp->nchunk){
+        stack_push(mp->stack, &minfo, sizeof(minfo));
+    }
 }
 
 void mempool_free(MemPool *mp)
 {
-    stack_free(mp->stack);
-    int i;
-    for (i = 0; i < mp->nchunk; i++){
-        munmap(mp->slot[i], mp->chunk_size);
+    if (!mp){
+        return;
     }
-    free(mp->slot);
+    if (mp->stack){
+        stack_free(mp->stack);
+    }
+    if (mp->slot){
+        int i;
+        for (i = 0; i < mp->nchunk; i++){
+            munmap(mp->slot[i], mp->chunk_size);
+        }
+        free(mp->slot);
+    }
     pthread_spin_destroy(&mp->lock);
     free(mp);
 }

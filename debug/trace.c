@@ -19,7 +19,6 @@
 
 #include "trace.h"
 
-#ifdef __TRACE__
 static char log_file[1024] = {0};
 static int pipe_fd[2] = {-1,-1};
 static void print_trace(const char *format, ...);
@@ -284,9 +283,3 @@ int trace_init(const char *logdir)
 #endif
     return 0;
 }
-#else
-int trace_init(const char *logdir)
-{
-    return 0;
-}
-#endif

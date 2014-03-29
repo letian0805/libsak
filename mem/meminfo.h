@@ -21,23 +21,25 @@ typedef struct{
     uint64_t pool_index:16;
     uint64_t chunk_index:16;
     uint64_t block_index:16;
+    uint8_t mem[0];
 }MemBlkInfo;
 
 typedef struct{
     uint64_t type:16;
     uint64_t size:48;
+    uint8_t mem[0];
 }MemInfo;
 
 typedef struct{
     uint64_t type:16;
-
     uint64_t size:48;
+    uint8_t mem[0];
 }MemShmInfo;
 
 typedef struct{
     uint64_t type:16;
-
     uint64_t size:48;
+    uint8_t mem[0];
 }MemMapInfo;
 
 int mempool_make_blksize(int size);

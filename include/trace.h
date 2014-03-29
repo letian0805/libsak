@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#define __TRACE__
-
 int trace_init(const char *logdir);
 
 #ifdef __cplusplus

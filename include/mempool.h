@@ -2,6 +2,10 @@
 #define __MEM_POOL_H
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct MemPool MemPool;
 
 MemPool *mempool_new(int block_size);
@@ -16,5 +20,8 @@ void mempool_put(MemPool *mp, void *mem);
 
 void mempool_free(MemPool *mp);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif //!__MEM_POOL_H

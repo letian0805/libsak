@@ -1,4 +1,11 @@
-import sys
+import sys, os
+import string
+env = Environment()
+
+env['SAK_TOP'] = os.getcwd()
+env['SAK_INCLUDE'] = 'include'
+env['SAK_TEST'] = 'test'
+env['SAK_SRC'] = 'src'
 
 incdir = ["include", "debug", "data", "pool", "platform", "mem", "io"]
 sources = [ "io/epool.c", "io/esignal.c", "io/token_bucket.c", 

@@ -1,6 +1,10 @@
 #ifndef __LOG_H
 #define __LOG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum{
     LOG_OFF = 0,
     LOG_FATAL,
@@ -20,5 +24,9 @@ void log_print(int level, const char *src_file, const char *src_func, int src_li
 #define WARN(__format, __args...)   log_print(LOG_WARN,   __FILE__, __func__, __LINE__, __format, ##__args)
 #define ERROR(__format, __args...)  log_print(LOG_ERROR,  __FILE__, __func__, __LINE__, __format, ##__args)
 #define FATAL(__format, __args...)  log_print(LOG_FATAL,  __FILE__, __func__, __LINE__, __format, ##__args)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //!__LOG_H
