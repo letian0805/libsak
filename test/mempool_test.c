@@ -7,6 +7,7 @@
 #include "log.h"
 
 #define BLKSIZE (1024)
+#define TESTSIZE (1024*1024*1024)
 
 int main(int argc, char *argv[])
 {
@@ -19,11 +20,13 @@ int main(int argc, char *argv[])
 
     int i;
     if (type == 0){
-        for (i = 0; i < 2000000; i++){
+        for (i = 0; i < TESTSIZE/BLKSIZE; i++){
             mem1 = mempool_get(mp);
         }
+        uint64_t size = mempool_memsize(mp);
+        printf("------memsize: %llu, oobsize: %llu, oobrate: %f\n", size, size - TESTSIZE, (size - TESTSIZE)*1.0/TESTSIZE);
     }else{
-        for (i = 0; i < 2000000; i++){
+        for (i = 0; i < TESTSIZE/BLKSIZE; i++){
             mem1 = malloc(BLKSIZE);
         }
     }

@@ -88,7 +88,6 @@ void *mem_poolget(int size)
     DEBUG("-------mp: %p. blk size: %d, mem: %p", mp, size, mem);
     if (mem){
         MemBlkInfo *minfo = (MemBlkInfo *)(mem - sizeof(MemBlkInfo));
-        minfo->type = MEM_TYPE_POOL;
         minfo->pool_index = id;
     }
 
