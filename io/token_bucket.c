@@ -17,6 +17,8 @@ struct TokenBucket{
     pthread_mutex_t wait_lock;
     pthread_spinlock_t lock;
     TokenBucketManager *tbman;
+    TBStateCallback callback;
+    void *user_data;
 };
 
 struct TokenBucketManager{
@@ -188,6 +190,8 @@ TokenBucket *token_bucket_create(int bitrate)
     token_bucket_set_bitrate(tb, bitrate);
     tb->tokens = 0;
     tb->tbman = NULL;
+    tb->callback = NULL;
+    tb->user_data = NULL;
     tb->id = -1;
 
     return tb;
@@ -209,6 +213,15 @@ int token_bucket_set_manager(TokenBucket *tb, TokenBucketManager *tbman)
     return ret;
 }
 
+int token_bucket_set_state_callback(TokenBucket *tb, TBStateCallback callback, void *user_data)
+{
+    tb_lock(tb);
+    tb->callback = callback;
+    tb->user_data = user_data;
+    tb_unlock(tb);
+    return 0;
+}
+
 int token_bucket_put(TokenBucket *tb, int tokens)
 {
     assert(tb && tokens > 0);
@@ -222,6 +235,9 @@ int token_bucket_put(TokenBucket *tb, int tokens)
         tb->tokens = tb->size;
     }
     if (oldtok <= tb->limit && tb->tokens > tb->limit){
+        if (tb->callback){
+            tb->callback(tb, TB_STATE_UNLOCK, tb->user_data);
+        }
         pthread_mutex_unlock(&tb->wait_lock);
     }
     ret = tb->tokens - oldtok;
@@ -248,6 +264,8 @@ int token_bucket_get(TokenBucket *tb, int tokens, bool nonblock)
     tb->tokens -= tokens;
     if (tb->tokens > tb->limit){
         pthread_mutex_unlock(&tb->wait_lock);
+    }else if (tb->callback){
+        tb->callback(tb, TB_STATE_LOCK, tb->user_data);
     }
     ret = oldtok - tb->tokens;
     tb_unlock(tb);
