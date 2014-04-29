@@ -11,7 +11,7 @@
 #include "log.h"
 #include "epool.h"
 
-#define HASH_SIZE 1023
+#define HASH_SIZE 4096
 
 typedef struct EPData EPData;
 struct EPData{
@@ -262,6 +262,8 @@ static inline int epool_insert_edata(EPool *ep, EPData *edata)
 {
     int hash_id = epool_get_hash_id(edata->edata.fd);
     EPData *head = ep->data_head[hash_id];
+    edata->prev = NULL;
+    edata->next = NULL;
     if (head == NULL){
         ep->data_head[hash_id] = edata;
     }else{
@@ -319,7 +321,9 @@ static int epool_del_event_internal(EPool *ep, EPDelEvent *del)
         ep->fds_num--;
         if (edata == edata_head){
             ep->data_head[idx] = edata_head->next;
-            ep->data_head[idx]->prev = NULL;
+            if (ep->data_head[idx]){
+                ep->data_head[idx]->prev = NULL;
+            }
         }else{
             edata->prev->next = edata->next;
             edata->next->prev = edata->prev;
