@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <unistd.h>
+#include <sys/time.h>
 
 #include "log.h"
 #include "token_bucket.h"

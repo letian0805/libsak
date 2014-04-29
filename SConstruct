@@ -12,7 +12,7 @@ sources = [ "io/epool.c", "io/esignal.c", "io/token_bucket.c",
             "debug/log.c", "debug/trace.c",
             "data/stack.c", "data/queue.c", 
             "mem/mempool.c", "mem/mem.c"]
-cflags = ["-g"]
+cflags = ["-g", "-Wall"]
 if sys.platform == "win32":
     cflags += ["-D__windows__"]
     sources += ["platform/windows.c"]

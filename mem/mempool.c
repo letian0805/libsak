@@ -82,7 +82,6 @@ int mempool_make_blksize(int size)
 
 MemPool *mempool_new(int block_size)
 {
-    int blocks_per_chunk = 0;
     MemPool *mp = (MemPool *)calloc(1, sizeof(MemPool));
     if (!mp){
         return NULL;

@@ -1,6 +1,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "token_bucket.h"
 
@@ -38,7 +40,6 @@ int main(void)
     int sumsize = 2*bitrate;
     int sum = 0;
     gettimeofday(&tm1, NULL);
-    int i;
     do{
         int size = datasize - (((rand()*1000) % datasize) - datasize/2);
         int ret = token_bucket_get(tb, size, false);

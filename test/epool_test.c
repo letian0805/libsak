@@ -54,7 +54,9 @@ static int ep_callback2(EPool *ep, EPEventData *edata)
     char buf[1024] = {0};
     if (edata->events & EP_IN){
         int size = read(edata->fd, buf, 1023);
-        printf("epcbk2: %s\n", buf);
+        if (size > 0){
+            printf("epcbk2: %s\n", buf);
+        }
     }
 
     return 0;

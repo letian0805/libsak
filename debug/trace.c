@@ -46,7 +46,7 @@ static void print_trace(const char *format, ...)
 {
     va_list args;
     FILE *fp = stderr;
-    if (log_file){
+    if (*log_file){
         fp = fopen(log_file, "a+");
     }
     if (fp==NULL){

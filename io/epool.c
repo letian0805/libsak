@@ -271,6 +271,8 @@ static inline int epool_insert_edata(EPool *ep, EPData *edata)
         head->prev = edata;
         ep->data_head[hash_id] = edata;
     }
+
+    return 0;
 }
 
 static int epool_add_event_internal(EPool *ep, EPAddEvent *add)
@@ -434,7 +436,7 @@ int epool_run(EPool *ep)
     ep->running = true;
     epool_unlock(ep);
     while(ep->running){
-        epool_time_wait(ep, -1);
+        evt_rets = epool_time_wait(ep, -1);
     }
 
     return 0;
