@@ -90,6 +90,9 @@ static inline void epmanager_insert(EPool *ep)
     epmanager_lock();
     ep->next = g_ep_manager.ep_header.next;
     ep->prev = &g_ep_manager.ep_header;
+    if (ep->next){
+        ep->next->prev = ep;
+    }
     g_ep_manager.ep_header.next = ep;
     epmanager_unlock();
 }
@@ -327,8 +330,12 @@ static int epool_del_event_internal(EPool *ep, EPDelEvent *del)
                 ep->data_head[idx]->prev = NULL;
             }
         }else{
-            edata->prev->next = edata->next;
-            edata->next->prev = edata->prev;
+            if (edata->prev){
+                edata->prev->next = edata->next;
+            }
+            if (edata->next){
+                edata->next->prev = edata->prev;
+            }
         }
         free(edata);
     }else if (events > 0){
