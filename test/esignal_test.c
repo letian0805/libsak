@@ -6,7 +6,16 @@ static char *g_owner = "estest";
 int esignal_test_callback(void *owner, void *data)
 {
     DEBUG("-------signal callback-----");
+    esignal_add(g_owner, "esignal test2", esignal_test_callback);
     esignal_remove(g_owner, "esignal test");
+    esignal_emit(g_owner, "esignal test2", "hello world");
+    return 0;
+}
+
+int esignal_test2_callback(void *owner, void *data)
+{
+    DEBUG("-------signal callback-----");
+
     return 0;
 }
 

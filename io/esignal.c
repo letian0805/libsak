@@ -2,6 +2,10 @@
 
 #include "esignal.h"
 
+#define ES_SLOT_SIZE 65535
+
+static ESignal *esignal_slot[65536];
+
 typedef struct ESignal ESignal;
 struct ESignal{
     uint64_t hash;
@@ -11,6 +15,21 @@ struct ESignal{
     ESCallback cbk;
     EPool *ep;
 };
+
+static int esignal_insert(ESignal *es)
+{
+
+    return 0;
+}
+
+static ESignal *esignal_new(void *owner, char *sig_name, ESCallback callback)
+{
+    ESignal *es = (ESignal *)calloc(1, sizeof(ESignal));
+
+    
+
+    return es;
+}
 
 int esignal_add(void *owner, char *sig_name, ESCallback callback)
 {
