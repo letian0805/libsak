@@ -1,10 +1,9 @@
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "esignal.h"
 
-#define ES_SLOT_SIZE 65535
-
-static ESignal *esignal_slot[65536];
+#define ES_SLOT_SIZE 65536
 
 typedef struct ESignal ESignal;
 struct ESignal{
@@ -15,6 +14,8 @@ struct ESignal{
     ESCallback cbk;
     EPool *ep;
 };
+
+static ESignal *esignal_slot[ES_SLOT_SIZE];
 
 static int esignal_insert(ESignal *es)
 {

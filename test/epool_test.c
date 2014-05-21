@@ -20,6 +20,7 @@ void *thread_proc(void *data)
         if (count <= 10){
             write(g_fd[1], p, len);
         }else{
+            printf("------------epool_free-------------\n");
             epool_free(ep);
             break;
         }
@@ -31,7 +32,7 @@ void *thread_proc(void *data)
 static void test1(void)
 {
     EPool *ep = epool_current();
-    epool_stop(ep);
+//    epool_stop(ep);
 }
 
 static int ep_callback(EPool *ep, EPEventData *edata)
@@ -78,8 +79,8 @@ int main(void)
     pthread_create(&tid, NULL, thread_proc, (void *)ep);
 
     epool_run(ep);
-    printf("--------STOPED-------------\n");
     epool_free(ep);
+    printf("--------STOPED-------------\n");
 
     return 0;
 }

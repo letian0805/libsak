@@ -110,6 +110,24 @@ static inline EPool *epmanager_find(pthread_t tid)
     return ep;
 }
 
+static inline bool epmanager_check(EPool *ep)
+{
+    bool ret = false;
+    epmanager_init();
+    epmanager_lock();
+    EPool *ep_head = g_ep_manager.ep_header.next;
+    while(ep_head){
+        if (ep_head == ep){
+            ret = true;
+            break;
+        }
+        ep_head = ep_head->next;
+    }
+    epmanager_unlock();
+
+    return ret;
+}
+
 static inline void epmanager_remove(EPool *ep)
 {
     epmanager_init();
@@ -126,6 +144,11 @@ static inline void epmanager_remove(EPool *ep)
 static inline void epool_lock(EPool *ep)
 {
     pthread_mutex_lock(&ep->lock);
+}
+
+static inline void epool_lock_destroy(EPool *ep)
+{
+    pthread_mutex_destroy(&ep->lock);
 }
 
 static inline void epool_unlock(EPool *ep)
@@ -278,6 +301,21 @@ static inline int epool_insert_edata(EPool *ep, EPData *edata)
     return 0;
 }
 
+static inline EPData *epool_find_edata(EPool *ep, int fd)
+{
+    if (fd < 0){
+        return NULL;
+    }
+    int idx = epool_get_hash_id(fd);
+    EPData *edata_head = ep->data_head[idx];
+    EPData *edata = edata_head;
+    while(edata && edata->edata.fd != fd){
+        edata = edata->next;
+    }
+
+    return edata;
+}
+
 static int epool_add_event_internal(EPool *ep, EPAddEvent *add)
 {
     EPData *edata = (EPData *)calloc(1, sizeof(EPData));
@@ -292,7 +330,12 @@ static int epool_add_event_internal(EPool *ep, EPAddEvent *add)
         .events = epool_events_translate_to(add->events),
         .data = {.ptr = edata},
     };
-    epoll_ctl(ep->epfd, EPOLL_CTL_ADD, add->fd, &epevt);
+    if (epoll_ctl(ep->epfd, EPOLL_CTL_ADD, add->fd, &epevt) != 0){
+        if (epoll_ctl(ep->epfd, EPOLL_CTL_MOD, add->fd, &epevt) != 0){
+            return -1;
+        }
+        return 0;
+    }
     ep->fds_num++;
     epool_insert_edata(ep, edata);
 
@@ -306,6 +349,19 @@ static int epool_add_callback(EPool *ep, EPEventData *edata)
         epool_add_event_internal(ep, &add);
     }
     
+    return 0;
+}
+
+static int epool_del_event_all(EPool *ep)
+{
+    EPData *edata = ep->data_head[0];
+    while(edata){
+        epoll_ctl(ep->epfd, EPOLL_CTL_DEL, edata->edata.fd, NULL);
+        ep->fds_num--;
+        EPData *old = edata;
+        edata = edata->next;
+        free(old);
+    }
     return 0;
 }
 
@@ -458,12 +514,18 @@ int epool_stop(EPool *ep)
 
 void epool_free(EPool *ep)
 {
+    if (!epmanager_check(ep)){
+        return ;
+    }
+    epmanager_remove(ep);
     if (!pthread_equal(ep->tid, pthread_self())){
         epool_stop(ep);
     }
     while(ep->running){
         usleep(100);
     }
+    epool_lock(ep);
+    epool_del_event_all(ep);
     close(ep->add_trigger[0]);
     close(ep->add_trigger[1]);
     close(ep->del_trigger[0]);
@@ -472,6 +534,9 @@ void epool_free(EPool *ep)
     close(ep->stop_trigger[1]);
     close(ep->epfd);
     free(ep->eb);
+    ep->eb = NULL;
+    epool_unlock(ep);
+    epool_lock_destroy(ep);
     free(ep);
 }
 
