@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
             mem1 = mempool_get(mp);
         }
         uint64_t size = mempool_memsize(mp);
-        printf("------memsize: %lu, oobsize: %lu, oobrate: %f\n", size, size - TESTSIZE, (size - TESTSIZE)*1.0/TESTSIZE);
+        printf("------memsize: %llu, oobsize: %llu, oobrate: %f\n", size, size - TESTSIZE, (size - TESTSIZE)*1.0/TESTSIZE);
     }else{
         for (i = 0; i < TESTSIZE/BLKSIZE; i++){
             mem1 = malloc(BLKSIZE);

@@ -1,0 +1,18 @@
+import sys, os
+import string
+Import('env')
+env = env.Clone()
+
+env['LIBS'] += ['sak']
+env['CPPPATH'] += ['../include']
+env['LIBPATH'] = ['..']
+
+env.Program(target = "stack_test", source = "stack_test.c")
+env.Program(target = "queue_test", source = "queue_test.c")
+env.Program(target = "macro_test", source = "macro_test.c")
+env.Program(target = "mempool_test", source = "mempool_test.c")
+env.Program(target = "mem_test", source = "mem_test.c")
+env.Program(target = "epool_test", source = "epool_test.c")
+env.Program(target = "esignal_test", source = "esignal_test.c")
+env.Program(target = "tokbkt_test", source = "tokbkt_test.c")
+env.Program(target = "trace_test", source = "trace_test.c")

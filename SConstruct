@@ -20,17 +20,13 @@ else:
     cflags += ["-D__linux__"]
     sources += ["platform/linux.c"]
 
-#libs += SharedLibrary(target = "sak", source = sources, CPPPATH = incdir)
-libs = Library(target = "sak", source = sources, CPPPATH = incdir, CFLAGS=cflags)
-libs += ["dl", "pthread"]
+env['CFLAGS'] = cflags
+env['CPPPATH'] = incdir
 
-Program(target = "logdump", source = "debug/logdump.c", CPPPATH = incdir, CFLAGS=cflags)
-Program(target = "stack_test", source = "test/stack_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "queue_test", source = "test/queue_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "macro_test", source = "test/macro_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "mempool_test", source = "test/mempool_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "mem_test", source = "test/mem_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "epool_test", source = "test/epool_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "esignal_test", source = "test/esignal_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "tokbkt_test", source = "test/tokbkt_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS=cflags)
-Program(target = "trace_test", source = "test/trace_test.c", CPPPATH = incdir, LIBS = libs, CFLAGS = cflags)
+libs = ["dl", "pthread"]
+env['LIBS'] = libs
+env.SharedLibrary(target = "sak", source = sources)
+#env.Library(target = "sak", source = sources)
+Export('env')
+env.Program(target = "logdump", source = "debug/logdump.c")
+SConscript('test/SConscript')
