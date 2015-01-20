@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <assert.h>
 
-#include "log.h"
+#include "sak.h"
 #include "epool.h"
 
 #define HASH_SIZE 4096

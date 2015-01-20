@@ -1,11 +1,11 @@
+#include "sak.h"
 #include "esignal.h"
-#include "log.h"
 
 static char *g_owner = "estest";
 
 int esignal_test_callback(void *owner, void *data)
 {
-    DEBUG("-------signal callback-----");
+    SAK_DEBUG("-------signal callback-----");
     esignal_add(g_owner, "esignal test2", esignal_test_callback);
     esignal_remove(g_owner, "esignal test");
     esignal_emit(g_owner, "esignal test2", "hello world");
@@ -14,7 +14,7 @@ int esignal_test_callback(void *owner, void *data)
 
 int esignal_test2_callback(void *owner, void *data)
 {
-    DEBUG("-------signal callback-----");
+    SAK_DEBUG("-------signal callback-----");
 
     return 0;
 }

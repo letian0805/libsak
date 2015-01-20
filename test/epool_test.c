@@ -32,7 +32,7 @@ void *thread_proc(void *data)
 static void test1(void)
 {
     EPool *ep = epool_current();
-//    epool_stop(ep);
+    epool_stop(ep);
 }
 
 static int ep_callback(EPool *ep, EPEventData *edata)

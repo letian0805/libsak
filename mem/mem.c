@@ -1,9 +1,9 @@
 #include <stdlib.h>
+#include "sak.h"
 
 #include "mem.h"
 #include "meminfo.h"
 #include "mempool.h"
-#include "log.h"
 
 static MemPool *mpool_slots[MAXMEMPOOL] = {NULL};
 
@@ -76,7 +76,7 @@ void *mem_poolget(int size)
         if (mp == NULL){
             continue;
         }
-        DEBUG("-------mp: %p, blk_size: %d\n", mp, mempool_blksize(mp));
+        SAK_DEBUG("-------mp: %p, blk_size: %d\n", mp, mempool_blksize(mp));
         if (blk_size == mempool_blksize(mp)){
             break;
         }
@@ -85,7 +85,7 @@ void *mem_poolget(int size)
     id = (id < MAXMEMPOOL)?id:mem_add_pool(size);
     mp = mpool_slots[id];
     mem = mempool_get(mp);
-    DEBUG("-------mp: %p. blk size: %d, mem: %p", mp, size, mem);
+    SAK_DEBUG("-------mp: %p. blk size: %d, mem: %p", mp, size, mem);
     if (mem){
         MemBlkInfo *minfo = (MemBlkInfo *)(mem - sizeof(MemBlkInfo));
         minfo->pool_index = id;
@@ -118,7 +118,7 @@ void mem_free(void *addr)
                 return;
             }
             MemPool *mp = mpool_slots[id];
-            DEBUG("---------mp: %p, mem free: %p", mp, addr);
+            SAK_DEBUG("---------mp: %p, mem free: %p", mp, addr);
             mempool_put(mp, addr);
             break;
         }

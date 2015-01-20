@@ -1,7 +1,7 @@
 #include <stdio.h>
+#include "sak.h"
 
 #include "stack.h"
-#include "log.h"
 
 int main(void)
 {
@@ -11,11 +11,11 @@ int main(void)
     char buf[9] = {0};
 
     stack_push(stack, data, 16);
-    DEBUG("----stack push: %s", data);
+    SAK_DEBUG("----stack push: %s", data);
     stack_pop(stack, buf, 8);
-    DEBUG("----stack pop: %s", buf);
+    SAK_DEBUG("----stack pop: %s", buf);
     stack_pop(stack, buf, 8);
-    DEBUG("----stack pop: %s", buf);
+    SAK_DEBUG("----stack pop: %s", buf);
 
     return 0;
 }

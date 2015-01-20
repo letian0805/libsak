@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/mman.h>
+#include "sak.h"
 
 #include "mempool.h"
 #include "stack.h"
 #include "meminfo.h"
-#include "log.h"
 
 #define MINSLOTSIZE 32
 #define MAXCHUNKSIZE (4*1024*1024)

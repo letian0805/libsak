@@ -1,23 +1,29 @@
+#include "sak.h"
+
+#ifdef __windows__
+int sak_trace_init(const char *logdir)
+{
+    return 0;
+}
+#else
 #define _GNU_SOURCE
 #include <dlfcn.h>
-#include <signal.h>
 #include <time.h>
 #include <stdarg.h>
+#include <string.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
+
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
 #include <unistd.h>
-#include <stdint.h>
-#include <pthread.h>
 #include <assert.h>
 #include <execinfo.h>
 #include <ucontext.h>
-#include "platform.h"
-
-#include "trace.h"
 
 static char log_file[1024] = {0};
 static int pipe_fd[2] = {-1,-1};
@@ -221,7 +227,7 @@ static void on_sigsegv(int signum, siginfo_t *info, void *ptr)
     }
 }
 
-int trace_init(const char *logdir)
+int sak_trace_init(const char *logdir)
 {
     int isdir = 1;
     if (access(logdir, F_OK)!=0){
@@ -244,8 +250,8 @@ int trace_init(const char *logdir)
         len--;
     }
     strncpy(log_dir, logdir, len);
-    prog_name = getpname();
-    sprintf(log_file, "%s/%s.%d.trace",log_dir, prog_name, getpid());
+    prog_name = sak_progname();
+    sprintf(log_file, "%s/%s.%d.trace",log_dir, prog_name, sak_progid());
 
     if (pipe(pipe_fd)!=0){
         return -1;
@@ -283,3 +289,4 @@ int trace_init(const char *logdir)
 #endif
     return 0;
 }
+#endif //__linux__

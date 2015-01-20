@@ -11,6 +11,7 @@ char *getpname(void)
     }
     char buf[1024] = {0};
     char *pname = NULL;
+
     DWORD pid = GetCurrentProcessId();
     PROCESSENTRY32 pe32;
     pe32.dwSize = sizeof(pe32);

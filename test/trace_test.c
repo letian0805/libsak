@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "trace.h"
+#include "sak.h"
 
 void test1(void)
 {
@@ -15,7 +15,7 @@ void test2(void)
 
 int main(void)
 {
-    trace_init("./");
+    sak_trace_init("./");
     test2();
     return 0;
 }

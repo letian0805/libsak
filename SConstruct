@@ -10,20 +10,17 @@ env['SAK_SRC'] = os.path.join(cwd, 'src')
 env['SAK_LIB'] = ['sak']
 env['SAK_LIBPATH'] = cwd
 
-incdir = ["include", "debug", "data", "pool", "platform", "mem", "io"]
+incdir = ["include", "debug", "data", "pool", "sys", "mem", "io"]
 sources = [ "io/epool.c", "io/esignal.c", "io/token_bucket.c", 
-            "debug/log.c", "debug/trace.c",
+            "debug/sak_log.c", "debug/sak_trace.c",
             "data/stack.c", "data/queue.c", 
-            "mem/mempool.c", "mem/mem.c"]
+            "mem/mempool.c", "mem/mem.c",
+            "sys/sak_sys.c", "sys/sak_dir.c"]
 cflags = ["-g", "-Wall"]
 if sys.platform == "win32":
     cflags += ["-D__windows__"]
-    sources += ["platform/windows.c"]
 else:
     cflags += ["-D__linux__"]
-    sources += ["platform/linux.c"]
-
-sources += ["platform/sak_dir.c"]
 
 env['CFLAGS'] = cflags
 env['CPPPATH'] = incdir

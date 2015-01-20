@@ -1,7 +1,7 @@
 #include <stdio.h>
+#include "sak.h"
 
 #include "queue.h"
-#include "log.h"
 
 int main(void)
 {
@@ -11,18 +11,18 @@ int main(void)
     char buf[9] = {0};
 
     queue_put(queue, data, 16);
-    DEBUG("----queue put: %s", data);
+    SAK_DEBUG("----queue put: %s", data);
     queue_get(queue, buf, 8);
-    DEBUG("----queue get: %s", buf);
+    SAK_DEBUG("----queue get: %s", buf);
     queue_put(queue, data, 16);
-    DEBUG("----queue put: %s", data);
+    SAK_DEBUG("----queue put: %s", data);
     queue_get(queue, buf, 8);
-    DEBUG("----queue get: %s", buf);
+    SAK_DEBUG("----queue get: %s", buf);
     queue_enlarge(queue, 1.5);
     queue_get(queue, buf, 8);
-    DEBUG("----queue get: %s", buf);
+    SAK_DEBUG("----queue get: %s", buf);
     queue_get(queue, buf, 8);
-    DEBUG("----queue get: %s", buf);
+    SAK_DEBUG("----queue get: %s", buf);
 
     return 0;
 }

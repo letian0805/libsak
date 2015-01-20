@@ -4,11 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "sak.h"
 
-#include "platform.h"
-#include "log.h"
-
-static int log_level = LOG_DEBUG;
+static SakLogLevel log_level = SAK_LOG_DEBUG;
 static FILE *log_file = NULL;
 
 char *gettimestr(char *tmstr)
@@ -32,21 +30,21 @@ char *gettimestr(char *tmstr)
 
 static const char *level_string(int level)
 {
-    char *level_str[LOG_ALL] = {
-        [LOG_OFF] = "",
-        [LOG_DEBUG] = "DBG",
-        [LOG_INFO] = "INF",
-        [LOG_WARN] = "WRN",
-        [LOG_ERROR] = "ERR",
-        [LOG_FATAL] = "FTL",
+    char *level_str[SAK_LOG_ALL] = {
+        [SAK_LOG_OFF] = "",
+        [SAK_LOG_DEBUG] = "DBG",
+        [SAK_LOG_INFO] = "INF",
+        [SAK_LOG_WARN] = "WRN",
+        [SAK_LOG_ERROR] = "ERR",
+        [SAK_LOG_FATAL] = "FTL",
     };
-    if (level > LOG_OFF && level < LOG_ALL){
+    if (level > SAK_LOG_OFF && level < SAK_LOG_ALL){
         return level_str[level];
     }
     return "";
 }
 
-int log_init(int level, const char *file)
+int sak_log_init(SakLogLevel level, const char *file)
 {
     int ret = 0;
     log_level = level;
@@ -58,12 +56,12 @@ int log_init(int level, const char *file)
         log_file = fp;
     }else{
         ret = errno;
-        ERROR("open %s failed: %s", file, strerror(errno));
+        SAK_ERROR("open %s failed: %s", file, strerror(errno));
     }
     return ret;
 }
 
-void log_print(int level, const char *file, const char *func, int line, const char *format, ...)
+void sak_log_print(SakLogLevel level, const char *src_file, const char *src_func, int src_line, const char *format, ...)
 {
     if (log_level < level){
         return;
@@ -71,29 +69,29 @@ void log_print(int level, const char *file, const char *func, int line, const ch
     char fmt[1024] = {0};
     char timestr[32] = {0};
     FILE *fp = (log_file)?log_file:stdout;
-    char *f = strrchr(file, '/');
+    char *f = strrchr(src_file, '/');
     if (f){
-        file = f + 1;
+        src_file = f + 1;
     }
     va_list args;
 
-    if (log_level >= LOG_DEBUG){
+    if (log_level >= SAK_LOG_DEBUG){
         sprintf(fmt, "[%s][%s][%s|%s|%s()|%d]: %s\n", 
                     gettimestr(timestr), level_string(level), 
-                    getpname(), file, func, line, format);
+                    sak_progname(), src_file, src_func, src_line, format);
     }else{
-        sprintf(fmt, "[%s][%s][%s]: %s\n", gettimestr(timestr), getpname(), 
+        sprintf(fmt, "[%s][%s][%s]: %s\n", gettimestr(timestr), sak_progname(), 
                     level_string(level), format);
     }
 
     va_start(args, format);
     vfprintf(fp, fmt, args);
-    if (level <= LOG_ERROR){
+    if (level <= SAK_LOG_ERROR){
        vfprintf(stderr, fmt, args);
     }
     va_end(args);
 
-    if (level == LOG_FATAL){
+    if (level == SAK_LOG_FATAL){
         exit(-1);
     }
 }

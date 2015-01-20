@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "log.h"
+#include "sak.h"
 #include "mem.h"
 
 int main(void)
@@ -8,7 +8,7 @@ int main(void)
     
     sprintf(mem, "%s", "hello world!\n");
 
-    DEBUG("%s", mem);
+    SAK_DEBUG("%s", mem);
 
     return 0;
 }

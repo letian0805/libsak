@@ -1,7 +1,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "sak_dir.h"
+#include <stdlib.h>
+#include <stdbool.h>
+#include "sak.h"
 
 #ifdef __windows__
 #include <io.h>
@@ -22,7 +24,7 @@ struct SakDir{
     SakDirHandle handle;
 };
 
-SakDir *dir_open(const char *path)
+SakDir *sak_dir_open(const char *path)
 {
     assert(path);
     assert(*path);
@@ -91,7 +93,7 @@ RETRY:
     return dir;
 }
 
-int dir_read(SakDir *dir, SakDirItem *item)
+int sak_dir_read(SakDir *dir, SakDirItem *item)
 {
     assert(dir);
     assert(item);
@@ -149,26 +151,47 @@ RETRY:
     return 0;
 }
 
-int dir_search(SakDir *dir, const char *name, SakDirItem *item)
+int sak_dir_search(SakDir *dir, const char *name, SakDirItem *item)
 {
+    SakDirItem tmp;
+    int ret = -1;
 
-    return 0;
+    assert(dir);
+    assert(name);
+    assert(item);
+
+    while(sak_dir_read(dir, &tmp) == 0){
+        if (strcmp(name, tmp.name) == 0){
+            *item = tmp;
+            ret = 0;
+            break;
+        }
+    }
+    return ret;
 }
 
-int dir_rewind(SakDir *dir)
+int sak_dir_rewind(SakDir *dir)
 {
+    assert(dir);
 
-    return 0;
-}
-
-int dir_close(SakDir *dir)
-{
 #ifdef __windows__
+
+#else
+    rewinddir(dir->handle);
+#endif
+    return 0;
+}
+
+int sak_dir_close(SakDir *dir)
+{
+    assert(dir);
+#ifdef __windows__
+
 #else
     closedir(dir->handle);
+#endif
     free(dir->path);
     free(dir);
-#endif
     return 0;
 }
 
