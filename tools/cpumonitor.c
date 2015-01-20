@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 static int pipe_fds[2];
 
@@ -15,8 +16,6 @@ static inline int epool_fd_nonblock(int fd)
     }
     return ret;
 }
-
-int parser
 
 int main(int argc, char *argv[])
 {

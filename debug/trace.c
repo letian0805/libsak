@@ -159,27 +159,27 @@ static int x86_trace(void **bt, int size)
                 if (*symbol=='+'){
                     addr = symbol + 1;
                 }
-				strcpy(offset, addr);
+                strcpy(offset, addr);
             }else{
                 /* if 'symbol' is symbol name, we must get it address of .so file.
                  * the dli_saddr is the absolute address in memory, the dli_fbase is the absolute address of .so.
                  * so dli_saddr - dli_fbase is the symbol's relatively address in .so file */
                 unsigned int symbol_offset = (unsigned int)((unsigned long)dl_info.dli_saddr - (unsigned long)dl_info.dli_fbase);
-				char *func_offset = strchr(symbol, '+');
-				int f_offset = 0;
-				if (func_offset){
-					func_offset++;
-					sscanf(func_offset, "%x", &f_offset);
-				}
-				symbol_offset += (f_offset - 1);
-        		sprintf(offset, "0x%x", symbol_offset);
+                char *func_offset = strchr(symbol, '+');
+                int f_offset = 0;
+                if (func_offset){
+                    func_offset++;
+                    sscanf(func_offset, "%x", &f_offset);
+                }
+                symbol_offset += (f_offset - 1);
+                sprintf(offset, "0x%x", symbol_offset);
             }
         }else{
-			sscanf(addr, "%x", &symbol_offset);
+            sscanf(addr, "%x", &symbol_offset);
             if (symbol && *symbol!='+'){
                 symbol_offset--;
             }
-			sprintf(offset, "0x%x", symbol_offset);
+            sprintf(offset, "0x%x", symbol_offset);
         }
 
         addr_to_line(offset, fpath);
@@ -206,19 +206,19 @@ static void on_sigsegv(int signum, siginfo_t *info, void *ptr)
 
     x86_trace( bt + 2, size - 2);
 
-	pthread_mutex_unlock(&trace_lock);
+    pthread_mutex_unlock(&trace_lock);
 
     /* if another thread hold the lock, we can't exit, must wait it print it's log */
-	sleep(1);
-	if(pthread_mutex_trylock(&trace_lock) == 0)
-	{
-		pthread_mutex_unlock(&trace_lock);
-    	fprintf(stderr,"get signal %s at time: %s", translate_signal(signum), datetime);
-		if (access(log_file, F_OK)==0){
-	    	fprintf(stderr,"please see log file %s\n", log_file);
-		}
-		exit(1);
-	}
+    sleep(1);
+    if(pthread_mutex_trylock(&trace_lock) == 0)
+    {
+        pthread_mutex_unlock(&trace_lock);
+        fprintf(stderr,"get signal %s at time: %s", translate_signal(signum), datetime);
+        if (access(log_file, F_OK)==0){
+            fprintf(stderr,"please see log file %s\n", log_file);
+        }
+        exit(1);
+    }
 }
 
 int trace_init(const char *logdir)
@@ -250,7 +250,7 @@ int trace_init(const char *logdir)
     if (pipe(pipe_fd)!=0){
         return -1;
     }
-	pthread_mutex_init(&trace_lock, NULL);
+    pthread_mutex_init(&trace_lock, NULL);
 
     /* create new stack for signal */
     stack_t ss;

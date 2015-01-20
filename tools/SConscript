@@ -1,0 +1,12 @@
+import sys, os
+import string
+Import('env')
+env = env.Clone()
+
+#env['LIBS'] += env['SAK_LIB']
+env['CPPPATH'] = env['SAK_INCLUDE']
+env['LIBPATH'] = env['SAK_LIBPATH']
+
+env.Program(target = "checkcpu", source = "checkcpu.c")
+env.Program(target = "cpumonitor", source = "cpumonitor.c")
+env.Program(target = "logdump", source = "logdump.c")

@@ -48,7 +48,6 @@ int main(void)
 {
     FILE *fp = popen("top -d 1", "r");
     char buf[4096] = {0};
-    int ret = 0;
     while(1){
         char *data = buf;
         while(fread(data, 1, 1, fp)){
