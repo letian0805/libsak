@@ -1,7 +1,8 @@
 #ifndef __SAK_DIR_H
 #ifndef __SAK_DEV
-#error please include sak.h!!!
+#error Do not include this file, please include sak.h instead!!!
 #endif
+
 #include <sak/sak_sys.h>
 
 #define __SAK_DIR_H

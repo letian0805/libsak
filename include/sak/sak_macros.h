@@ -1,6 +1,6 @@
 #ifndef __SAK_MACROS_H
 #ifndef __SAK_DEV
-#error please include sak.h!!!
+#error Do not include this file, please include sak.h instead!!!
 #endif
 
 #define __SAK_MACROS_H

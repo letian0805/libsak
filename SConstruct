@@ -15,7 +15,7 @@ sources = [ "io/epool.c", "io/esignal.c", "io/token_bucket.c",
             "debug/sak_log.c", "debug/sak_trace.c",
             "data/stack.c", "data/queue.c", 
             "mem/mempool.c", "mem/mem.c",
-            "sys/sak_sys.c", "sys/sak_dir.c"]
+            "sys/sak_sys.c", "sys/sak_dir.c", "sys/sak_dl.c"]
 cflags = ["-g", "-Wall"]
 if sys.platform == "win32":
     cflags += ["-D__windows__"]
