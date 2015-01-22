@@ -9,5 +9,7 @@
 #include <sak/sak_trace.h>
 #include <sak/sak_sys.h>
 #include <sak/sak_dl.h>
+#include <sak/sak_object.h>
+#include <sak/sak_plugin.h>
 
 #endif //__SAK_H

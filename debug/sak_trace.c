@@ -1,6 +1,5 @@
-#include "sak.h"
-
 #ifdef __windows__
+#include "sak.h"
 int sak_trace_init(const char *logdir)
 {
     return 0;
@@ -24,6 +23,7 @@ int sak_trace_init(const char *logdir)
 #include <assert.h>
 #include <execinfo.h>
 #include <ucontext.h>
+#include "sak.h"
 
 static char log_file[1024] = {0};
 static int pipe_fd[2] = {-1,-1};
