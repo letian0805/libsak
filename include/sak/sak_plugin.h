@@ -8,6 +8,12 @@
 #include <stdint.h>
 
 #define SAK_PLUGIN_CORE_VERSION 0x00000001
+#define SAK_MAKE_INT16(_c1, _c2) ((((uint16_t)(_c1)&0xff) << 8) | ((uint16_t)(_c2)&0xff))
+#define SAK_MAKE_INT32(_c1, _c2, _c3, _c4) (((uint32_t)SAK_MAKE_INT16(_c1, _c2) << 16) | (uint32_t)SAK_MAKE_INT16(_c3, _c4))
+#define SAK_MAKE_INT64(_c1, _c2, _c3, _c4, _c5, _c6, _c7, _c8) \
+(((uint64_t)SAK_MAKE_INT32(_c1, _c2, _c3, _c4) << 32) | (uint64_t)SAK_MAKE_INT32(_c5, _c6, _c7, _c8))
+
+#define SAK_PLUGIN_MAGIC SAK_MAKE_INT64('S','A','K','P','L','G','I','N')
 
 typedef enum{
     SAK_PLUGIN_TYPE_UNKNOWN = 0,
@@ -15,36 +21,53 @@ typedef enum{
     SAK_PLUGIN_TYPE_NORMAL,
 }SakPluginType;
 
-#define SAK_PLUGIN_MAX_PATH 1024
-
+typedef struct SakPlugin SakPlugin;
 typedef struct SakPluginCore SakPluginCore;
+typedef struct SakPluginInfo SakPluginInfo;
+typedef struct SakPluginManager SakPluginManager;
+
+typedef int (*SakPluginEntryFunc)(const SakPluginCore *core);
+
+#define SAK_PLUGIN_NAME "ExportedSakPlugin"
+
+#define SAK_EXPORT_PLUGIN(_type, _subtype, _version, _name, _desc, _data_size, _init, _deinit) \
+const SakPlugin ExportedSakPlugin = { \
+    .magic = SAK_PLUGIN_MAGIC, \
+    .core_version = SAK_PLUGIN_CORE_VERSION, \
+    .type = _type, \
+    .subtype = _subtype, \
+    .version = _version, \
+    .name = _name, \
+    .desc = _desc, \
+    .data_size = _data_size, \
+    .init = _init, \
+    .deinit = _deinit \
+};
+
 struct SakPluginCore{
     uint32_t version;
 };
 
-typedef struct SakPlugin SakPlugin;
-
 struct SakPlugin{
+    uint64_t magic;
     uint32_t core_version;
     uint16_t type;
     uint16_t subtype;
     uint32_t version;
-    uint64_t magic;
     const char *name;
     const char *desc;
     uint32_t data_size;
-    int (*Init)(const SakPluginCore *core, uint32_t pm_version, void *data);
-    int (*Deinit)(const SakPluginCore *core, void *data);
+    int (*init)(const SakPluginCore *core, void *data);
+    int (*deinit)(const SakPluginCore *core, void *data);
 };
 
-typedef struct SakPluginInfo SakPluginInfo;
 struct SakPluginInfo{
-    char *file;
-    SakPlugin *plugin;
-    SakDl *dl;
+    const char *file;
+    const SakDl *dl;
+    const SakPlugin *plugin;
+    void *data;
 };
 
-typedef struct SakPluginManager SakPluginManager;
 struct SakPluginManager{
     int (*add_plugin)(SakPluginManager *man, SakPluginInfo *plugin_info);
     int (*update_plugin)(SakPluginManager *man, const char *newfile, uint16_t subtype);
