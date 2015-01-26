@@ -35,7 +35,7 @@ int queue_enlarge(Queue *q, float rate)
     if (rate <= 1){
         rate = 1.5;
     }
-    int new_size = q->size * rate;
+    int new_size = (int)(q->size * rate);
     uint8_t *new_buf = (uint8_t *)realloc(q->q, new_size);
     if (!new_buf){
         return -1;

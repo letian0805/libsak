@@ -17,11 +17,11 @@ sources = [ "io/epool.c", "io/esignal.c", "io/token_bucket.c",
             "mem/mempool.c", "mem/mem.c",
             "sys/sak_prog.c", "sys/sak_dir.c", "sys/sak_dl.c",
             "plugin/sak_plugin_core.c" ]
-cflags = ["-g", "-Wall"]
+cflags = ["-Wall"]
 if sys.platform == "win32":
-    cflags += ["-D__windows__"]
+    cflags += ["-D__windows__", "-D_CRT_SECURE_NO_WARNINGS", "-D_DEBUG", "-D_WINDOWS"]
 else:
-    cflags += ["-D__linux__"]
+    cflags += ["-g", "-D__linux__"]
 
 env['CFLAGS'] = cflags
 env['CPPPATH'] = incdir

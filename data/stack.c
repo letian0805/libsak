@@ -40,7 +40,7 @@ bool stack_empty(Stack *st)
 
 int stack_enlarge(Stack *st, float rate)
 {
-    int new_size = st->size * rate;
+    int new_size = (int)(st->size * rate);
     if (new_size <= st->size){
         return -1;
     }
