@@ -4,6 +4,7 @@
 #endif
 
 #define __SAK_LOG_H
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,11 +24,11 @@ int sak_log_init(SakLogLevel level, const char *log_file);
 
 void sak_log_print(SakLogLevel level, const char *src_file, const char *src_func, int src_line, const char *format, ...);
 
-#define SAK_DEBUG(__format, __args...)  sak_log_print(SAK_LOG_DEBUG,  __FILE__, __func__, __LINE__, __format, ##__args)
-#define SAK_INFO(__format, __args...)   sak_log_print(SAK_LOG_INFO,   __FILE__, __func__, __LINE__, __format, ##__args)
-#define SAK_WARN(__format, __args...)   sak_log_print(SAK_LOG_WARN,   __FILE__, __func__, __LINE__, __format, ##__args)
-#define SAK_ERROR(__format, __args...)  sak_log_print(SAK_LOG_ERROR,  __FILE__, __func__, __LINE__, __format, ##__args)
-#define SAK_FATAL(__format, __args...)  sak_log_print(SAK_LOG_FATAL,  __FILE__, __func__, __LINE__, __format, ##__args)
+#define SAK_DEBUG(__format, ...)  sak_log_print(SAK_LOG_DEBUG,  __FILE__, __func__, __LINE__, __format, ##__VA_ARGS__)
+#define SAK_INFO(__format, ...)   sak_log_print(SAK_LOG_INFO,   __FILE__, __func__, __LINE__, __format, ##__VA_ARGS__)
+#define SAK_WARN(__format, ...)   sak_log_print(SAK_LOG_WARN,   __FILE__, __func__, __LINE__, __format, ##__VA_ARGS__)
+#define SAK_ERROR(__format, ...)  sak_log_print(SAK_LOG_ERROR,  __FILE__, __func__, __LINE__, __format, ##__VA_ARGS__)
+#define SAK_FATAL(__format, ...)  sak_log_print(SAK_LOG_FATAL,  __FILE__, __func__, __LINE__, __format, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 }

@@ -3,7 +3,7 @@
 #error Do not include this file, please include sak.h instead!!!
 #endif
 
-#include <sak/sak_sys.h>
+#include <sak/sak_prog.h>
 
 #define __SAK_DIR_H
 
@@ -14,6 +14,8 @@ extern "C" {
 #ifndef _MAX_FNAME
 #define _MAX_FNAME 1024
 #endif
+
+typedef unsigned long long SakTime;
 
 typedef enum{
     SAK_FILE_UNKNOWN = 0,
