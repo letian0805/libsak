@@ -6,13 +6,9 @@
 #define __SAK_PLUGIN_H
 
 #include <stdint.h>
+#include "sak/sak_macros.h"
 
-#define SAK_PLUGIN_CORE_VERSION 0x00000001
-#define SAK_MAKE_INT16(_c1, _c2) ((((uint16_t)(_c1)&0xff) << 8) | ((uint16_t)(_c2)&0xff))
-#define SAK_MAKE_INT32(_c1, _c2, _c3, _c4) (((uint32_t)SAK_MAKE_INT16(_c1, _c2) << 16) | (uint32_t)SAK_MAKE_INT16(_c3, _c4))
-#define SAK_MAKE_INT64(_c1, _c2, _c3, _c4, _c5, _c6, _c7, _c8) \
-(((uint64_t)SAK_MAKE_INT32(_c1, _c2, _c3, _c4) << 32) | (uint64_t)SAK_MAKE_INT32(_c5, _c6, _c7, _c8))
-
+#define SAK_PLUGIN_CORE_VERSION SAK_MAKE_INT32(0, 0, 0, 1)
 #define SAK_PLUGIN_MAGIC SAK_MAKE_INT64('S','A','K','P','L','G','I','N')
 
 typedef enum{

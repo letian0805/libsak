@@ -1,11 +1,13 @@
+#ifdef __linux__
 #define _GNU_SOURCE
 #include <sys/epoll.h>
+#include <unistd.h>
+#include <fcntl.h>
+#endif
 #include <pthread.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <fcntl.h>
 #include <assert.h>
 
 #include "sak.h"
